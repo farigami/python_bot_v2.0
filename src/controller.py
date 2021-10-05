@@ -19,7 +19,7 @@ class Contoller(Thread, Win):
                         super().postMessage(bot.hwnd, 0x13)
                         bot.score += 1
             sleep(0.1)
+        
 
     def controller_end(self):
         self.isStop = True
-        print('stop in controller')

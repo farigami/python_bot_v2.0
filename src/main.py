@@ -41,7 +41,6 @@ class Main(Thread, Win):
 
     def main_end(self):
         self.isStop = True
-        print('stop in main')
         for bot in self.botArray:
             super().setWindowText(bot.hwnd, self.windowCaption)
       
@@ -60,12 +59,3 @@ menuobject = FishingGUI(
     botArray=mainObject.botArray,
 )
 loop.run_forever()
-
-
-# menuObject = Menu(
-#     mainObject.botArray,
-#     mainObject.main_end,
-#     controllerObject.controller_end,
-#     )
-# menuObject.start()
-

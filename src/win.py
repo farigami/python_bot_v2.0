@@ -19,3 +19,7 @@ class Win:
     
     def getWindowCaption(self, hwnd):
         return win32gui.GetWindowText(hwnd)
+    
+    def resizeWindow(self, hwnd):
+        x1, y1, _, _ = win32gui.GetWindowRect(hwnd)
+        win32gui.MoveWindow(hwnd, x1, y1, 300, 200, True)
