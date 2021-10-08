@@ -5,6 +5,7 @@ import asyncio
 from time import sleep
 
 
+
 # from menu import Menu
 from FishingGUI import FishingGUI
 from bot import Bot
@@ -16,6 +17,7 @@ class Main(Thread, Win):
         Thread.__init__(self)
         self.Base_dir = Path(__file__).resolve().parent
         self.botArray = []
+        self.lastActivity = []
         self.windowClass = "SDL_app"
         self.windowCaption = "Trove"
         self.isStop = isStop
@@ -29,14 +31,26 @@ class Main(Thread, Win):
                     super().setWindowText(bot.hwnd, bot.windowCaption)
                     
                 if not bot.isWindowActive():
+                    self.lastActivity.append(f'Bot stopped | id:{index+1} | hwnd:{bot.hwnd} | pid:{bot.pid}')
                     del self.botArray[index]
+    
+                    
 
             HWND = super().findWindow(self.windowClass, self.windowCaption)
             if HWND:
                 PID = super().getWindowThreadProcessId(HWND)
                 tempWindowCaption = f'Trove Fishbot - {len(self.botArray) + 1}'
                 super().setWindowText(HWND, tempWindowCaption)
-                self.botArray.append(Bot(botId=len(self.botArray) + 1, hwnd=HWND, pid=PID, windowCaption=tempWindowCaption))
+                self.botArray.append(
+                    Bot(
+                        botId=len(self.botArray) + 1, 
+                        hwnd=HWND, 
+                        pid=PID, 
+                        windowCaption=tempWindowCaption)
+                    )
+                self.lastActivity.append(f'Bot launched | id:{len(self.botArray)} | hwnd:{HWND} | pid:{PID}')
+    
+   
             sleep(0.1)
 
     def main_end(self):
@@ -57,5 +71,6 @@ menuobject = FishingGUI(
     controller_end=controllerObject.controller_end,
     Base_dir=mainObject.Base_dir,
     botArray=mainObject.botArray,
+    lastActivity=mainObject.lastActivity
 )
 loop.run_forever()

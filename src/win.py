@@ -4,7 +4,10 @@ import win32con
 
 class Win:
     def findWindow(self, hwnd, windowClass):
-        return win32gui.FindWindow(hwnd, windowClass)
+        hwnd = win32gui.FindWindow(hwnd, windowClass)
+        if hwnd != 0:
+            return hwnd
+        return False
 
     def setWindowText(self, hwnd, windowCaption):
         win32gui.SetWindowText(hwnd, windowCaption)

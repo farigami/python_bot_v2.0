@@ -13,6 +13,7 @@ class Contoller(Thread, Win):
     def run(self):
         while not self.isStop:
             for bot in self.botArray:
+                bot.score += 1
                 if bot.isStop is True:
                     state, fish = bot.pm.read_int(bot.stateAddress), bot.pm.read_int(bot.fishAddress)
                     if state == 2 and fish == 1 or state == 0:
@@ -23,3 +24,4 @@ class Contoller(Thread, Win):
 
     def controller_end(self):
         self.isStop = True
+

@@ -22,7 +22,7 @@ class Bot(Win):
         self.fish = '0x010D44C8'
         self.state_offsets = [0xC, 0xC, 0xC, 0x50, 0xC4, 0x204, 0x54]
         self.fish_offsets = [0x0, 0x6C, 0x1C, 0x50, 0x0, 0x38, 0x6C8]
-        self.score=0,
+        self.score = 0
         self.windowCaption = windowCaption
         self.stateAddress = stateAddress
         self.fishAddress = fishAddress

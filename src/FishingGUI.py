@@ -1,7 +1,7 @@
 import asyncio
 import tkinter as tk
-from tkinter.constants import END
 from PIL import Image, ImageTk
+from datetime import datetime
 import webbrowser
 from pathlib import Path
 
@@ -15,6 +15,7 @@ class FishingGUI(tk.Frame, Win):
             controller_end,
             Base_dir,
             botArray,
+            lastActivity,
             master = tk.Tk(),
             interval=1/120
         ):
@@ -36,83 +37,101 @@ class FishingGUI(tk.Frame, Win):
         self.master.maxsize(735, 435)
         self.master.minsize(735, 435)
         self.master.protocol("WM_DELETE_WINDOW", lambda: self.close(main_end, controller_end))
-        self.donateURL = 'www.donationalerts.com/r/squeaknight'
+        self.lastActivity = lastActivity
         self.botArray = botArray
-        self.botArrayLenght = 0
+        self.botArrayControl = []
         self.tasks = []
         self.tasks.append(loop.create_task(self.mainPage(interval)))
         self.tasks.append(loop.create_task(self.updater(interval)))
+        self.githubURL = 'https://github.com/farigami/python_bot_v2.0'
+        self.donateURL = 'www.donationalerts.com/r/squeaknight'
 
     async def mainPage(self, interval):
+        logLenght = 0
         self.logo() 
-        self.control_button()
-        self.LogLabel()
-  
+        self.menuButton()
+        self.controlFrame()
+        self.logLabel()
+
+        
         while await asyncio.sleep(interval, True):
-            pass
+            for bot in self.botArray: 
+                self.bot_score['text'] = f'score: {bot.score}'
+
+
+            if len(self.lastActivity) != logLenght:
+               
+                time = datetime.now().strftime("%H:%M:%S")
+                self.log_listbox.insert(tk.END, f' {time} {self.lastActivity[-1]}')
+                logLenght = len(self.lastActivity)
+  
 
     def logo(self):
         logo_frame = tk.Frame(
             self.master,
             bg='white'
         )
-        logo1 = tk.Label(
-            logo_frame,
-            bd=-2,
-            bg='white',
-            fg='#31343b',
-            text='Squeak', 
-            font=('Tahoma', 16, 'bold'),
-            cursor='hand2'
+        logos = [
+            {'text': 'Squeak', 'fg': '#31343b'},
+            {'text': 'Fishing v2.0', 'fg': 'Crimson'}
+        ]
+        for logo in logos:
+            tmplogo = tk.Label(
+                logo_frame,
+                bd=-2,
+                bg='white',
+                fg=logo['fg'],
+                text=logo['text'], 
+                font=('Tahoma', 16, 'bold'),
+                cursor='hand2'
             )
-        logo2 = tk.Label(
-            logo_frame,
-            bd=-2,
-            bg='white',
-            fg='Crimson',
-            text='Fishing v2.0',
-            font=('Tahoma', 16, 'bold'),
-            cursor='hand2'
-            )
-
-        logo1.bind("<Button-1>", lambda e: self.callback(self.donateURL))
-        logo2.bind("<Button-1>", lambda e: self.callback(self.donateURL))
-        logo1.pack(side='left', anchor='n')
-        logo2.pack(side='left', anchor='n')
-        logo_frame.grid(row=0, column=1, sticky='nsew')
+            tmplogo.bind("<Button-1>", lambda e: self.callback(self.githubURL))
+            tmplogo.pack(side='left', anchor='n')
         logo_frame.place(x=5, y=5)
     
-    def LogLabel(self):
-        message_count = 1
+    def controlFrame(self):
+        control_frame = tk.Frame(
+            self.master,
+            bg='white'
+        )
+        scrollbar = tk.Scrollbar(control_frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.control_listbox = tk.Listbox(
+            control_frame,
+        )
+
+
+        control_frame.place(x=60, y=150)
+
+
+    def logLabel(self):
         log_frame = tk.Frame(
             self.master,
             height=7
             )
         scrollbar = tk.Scrollbar(log_frame)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        listbox = tk.Listbox(
+        self.log_listbox = tk.Listbox(
             log_frame,
             yscrollcommand=scrollbar.set,
             height=7
         )
         
-        listbox.insert(tk.END, f'#{message_count} Welcome back')
-        message_count += 1
-        listbox.pack(fill=tk.BOTH)
-        scrollbar.config(command=listbox.yview)
-        log_frame.pack(side='bottom', fill=tk.X)
-        listbox.insert(tk.END, f'#{message_count} Welcome back')
-    
+        self.log_listbox.insert(tk.END, 'Welcome back fishing log')
+        self.log_listbox.pack(fill='both')
+        scrollbar.config(command=self.log_listbox.yview)
+        log_frame.pack(side='bottom', fill='x')
 
-    def control_button(self):
+
+    def menuButton(self):
         button_frame = tk.Frame(
             self.master,
             bg='white',
         )
         components = [
             {'title': 'Donate', 'command': lambda: self.callback(self.donateURL)},
-            {'title': 'Resize windows', 'command': lambda: self.resizeBtn(self.botArray)}, #add func
-            {'title': 'Clear Log', 'command': None}, #add func
+            {'title': 'Resize windows', 'command': lambda: self.resize()}, 
+            {'title': 'Clear Log', 'command': lambda: self.clearlog()}, 
         ]
         for component in components:
             tk.Button(
@@ -129,7 +148,11 @@ class FishingGUI(tk.Frame, Win):
         button_frame.grid(row=0, column=1,  sticky='nsew')
         button_frame.place(x=600, y=157.5)
     
-    def resizeBtn(self):
+    def clearlog(self):
+        self.listbox.delete(0, tk.END)
+        self.listbox.insert(tk.END, 'Welcome back fishing log')
+
+    def resize(self):
         for bot in self.botArray:
             super().resizeWindow(bot.hwnd)
 
@@ -141,9 +164,11 @@ class FishingGUI(tk.Frame, Win):
             return ImageTk.PhotoImage(Image.open(path).resize(size, Image.ANTIALIAS))
         return ImageTk.PhotoImage(Image.open(path))
 
+
     async def updater(self, interval):
         while await asyncio.sleep(interval, True):
             self.update()
+
 
     def close(self, main_end, controller_end):
         main_end()
@@ -154,3 +179,27 @@ class FishingGUI(tk.Frame, Win):
         self.destroy()
         
 
+# tk.Label(
+#     control_frame,
+#     bg='white',
+#     font=('Tahoma', 12, 'bold'),
+#     text='Bots list'
+# ).pack(side='top', anchor='n')
+
+# for bot in self.botArray:
+#             self.bot_windowCaption = tk.Label(
+#                 self.control_frame,
+#                 bg='white',
+#                 font=('Tahoma', 10, 'bold'),
+#             )
+#             self.bot_windowCaption['text'] = bot.windowCaption
+
+#             self.bot_score = tk.Label(
+#                 self.control_frame,
+#                 bg='white',
+#                 font=('Tahoma', 8, 'bold'),
+#                 text=f'score: {bot.score}'
+#             )
+            
+#             self.bot_windowCaption.pack(side='left', anchor='n')
+#             self.bot_score.pack(side='left', anchor='n')
