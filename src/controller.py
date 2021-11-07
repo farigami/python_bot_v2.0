@@ -13,12 +13,13 @@ class Contoller(Thread, Win):
     def run(self):
         while not self.isStop:
             for bot in self.botArray:
-                bot.score += 1
                 if bot.isStop is True:
                     state, fish = bot.pm.read_int(bot.stateAddress), bot.pm.read_int(bot.fishAddress)
-                    if state == 2 and fish == 1 or state == 0:
+                    if state == 2 and fish == 1:
                         super().postMessage(bot.hwnd, 0x13)
                         bot.score += 1
+                    elif state == 0:
+                        super().postMessage(bot.hwnd, 0x13)
             sleep(0.1)
         
 

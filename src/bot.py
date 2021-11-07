@@ -10,18 +10,18 @@ class Bot(Win):
             client=None, 
             hwnd=None,
             windowCaption=None,
-            stateAddress=None, 
-            fishAddress=None, 
+            stateAddress=None,
+            fishAddress=None
         ):
         self.botId = botId
         self.pm  = pm
         self.pid = pid
         self.client = client
         self.hwnd = hwnd
-        self.state = '0x00FEE074'
-        self.fish = '0x010D44C8'
-        self.state_offsets = [0xC, 0xC, 0xC, 0x50, 0xC4, 0x204, 0x54]
-        self.fish_offsets = [0x0, 0x6C, 0x1C, 0x50, 0x0, 0x38, 0x6C8]
+        self.state = '0x00FC3D18'
+        self.fish = '0x00F9BCE8'
+        self.state_offsets = [0x0, 0x28, 0x54, 0x88, 0xAC, 0x204, 0x54]
+        self.fish_offsets = [0x0, 0x6C, 0x1C, 0x50, 0x0, 0x34, 0x704]
         self.score = 0
         self.windowCaption = windowCaption
         self.stateAddress = stateAddress
@@ -46,20 +46,20 @@ class Bot(Win):
 
     
     def findAddress(self):
-        try:
-            tempstate = self.pm.read_int(self.client + int(self.state, 16))
-            tempfish = self.pm.read_int(self.client + int(self.fish, 16))
-            for i in range(len(self.state_offsets)):
-                '''
-                Find fish and state address
-                '''
-                fishAddress = tempfish + self.fish_offsets[i]
-                stateAddress = tempstate + self.state_offsets[i]
+        
+        tempstate = self.pm.read_int(self.client + int(self.state, 16))
+        tempfish = self.pm.read_int(self.client + int(self.fish, 16))
+        for i in range(len(self.state_offsets)):
+            '''
+            Find fish and state address
+            '''
+            fishAddress = tempfish + self.fish_offsets[i]
+            stateAddress = tempstate + self.state_offsets[i]
 
-                tempstate = self.pm.read_int(tempstate + self.state_offsets[i])
-                tempfish = self.pm.read_int(tempfish + self.fish_offsets[i])
+            tempstate = self.pm.read_int(tempstate + self.state_offsets[i])
+            tempfish = self.pm.read_int(tempfish + self.fish_offsets[i])
 
-            self.stateAddress = stateAddress
-            self.fishAddress = fishAddress
-        except:return False
+        self.stateAddress = stateAddress
+        self.fishAddress = fishAddress
+        
         return True

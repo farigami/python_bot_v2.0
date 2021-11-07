@@ -1,12 +1,9 @@
-from threading import Thread
-from pathlib import Path
-
 import asyncio
 from time import sleep
+from pathlib import Path
+from threading import Thread
 
-
-
-# from menu import Menu
+#import modules
 from FishingGUI import FishingGUI
 from bot import Bot
 from win import Win

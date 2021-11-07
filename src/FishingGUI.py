@@ -17,14 +17,13 @@ class FishingGUI(tk.Frame, Win):
             botArray,
             lastActivity,
             master = tk.Tk(),
-            interval=1/120
+            interval=1/60
         ):
         super().__init__()
         self.Base_dir = Base_dir
         try:
             self.images = {
-                'icon': self.ready_img(Path(self.Base_dir / 'img\\main.ico')), 
-                'banner': self.ready_img(Path(self.Base_dir / 'img\\banner.png')),
+                'icon': self.ready_img(Path(self.Base_dir / 'main.ico')), 
             }
         except:self.images = False
         self.loop = loop
@@ -37,34 +36,73 @@ class FishingGUI(tk.Frame, Win):
         self.master.maxsize(735, 435)
         self.master.minsize(735, 435)
         self.master.protocol("WM_DELETE_WINDOW", lambda: self.close(main_end, controller_end))
+
         self.lastActivity = lastActivity
         self.botArray = botArray
-        self.botArrayControl = []
+        self.botArrayLenght = 0
+        self.contorl_state = False
         self.tasks = []
         self.tasks.append(loop.create_task(self.mainPage(interval)))
         self.tasks.append(loop.create_task(self.updater(interval)))
-        self.githubURL = 'https://github.com/farigami/python_bot_v2.0'
-        self.donateURL = 'www.donationalerts.com/r/squeaknight'
+        self.githubURL = r'https://github.com/farigami/python_bot_v2.0'
+        self.donateURL = r'www.donationalerts.com/r/squeaknight'
 
     async def mainPage(self, interval):
         logLenght = 0
+        flag = False
         self.logo() 
         self.menuButton()
-        self.controlFrame()
         self.logLabel()
 
         
         while await asyncio.sleep(interval, True):
-            for bot in self.botArray: 
-                self.bot_score['text'] = f'score: {bot.score}'
+            if len(self.botArray) != self.botArrayLenght:
+                flag = True
+                if self.contorl_state:
+                    self.contol_destroy()
 
-
+                self.controlFrame()
+                self.control_refresh()
+                self.botArrayLenght = len(self.botArray)
+                
+                
+            elif len(self.botArray) == 0 and flag:
+                self.contol_destroy()
+                self.botArrayLenght = len(self.botArray)
+                flag = False
+                          
             if len(self.lastActivity) != logLenght:
-               
                 time = datetime.now().strftime("%H:%M:%S")
                 self.log_listbox.insert(tk.END, f' {time} {self.lastActivity[-1]}')
                 logLenght = len(self.lastActivity)
-  
+
+    
+
+    def control_refresh(self):
+        
+        for index, bot in enumerate(self.botArray):
+            tmpbot = (
+                bot.windowCaption,
+                hex(bot.pid), hex(bot.hwnd),
+                ''.join(['Enable' if bot.isStop else 'Disable']),
+            )
+            for column in range(4):
+                self.makeEntry(
+                    row=index,
+                    column=column,
+                    text=tmpbot[column]
+                )
+
+    def makeEntry(self, row, column, text):
+        tmpEntry =  tk.Entry(
+                self.control_listbox,
+                fg='blue',
+                width=23,
+            )
+
+        tmpEntry.grid(row=row, column=column)
+        tmpEntry.insert(tk.END, text)
+        
 
     def logo(self):
         logo_frame = tk.Frame(
@@ -90,31 +128,40 @@ class FishingGUI(tk.Frame, Win):
         logo_frame.place(x=5, y=5)
     
     def controlFrame(self):
-        control_frame = tk.Frame(
+        self.contorl_state = True
+        self.control_frame = tk.Frame(
             self.master,
-            bg='white'
+            bd=-2,
+            bg='white',
+            width=160,
+            height=550
         )
-        scrollbar = tk.Scrollbar(control_frame)
+    
+        scrollbar = tk.Scrollbar(self.control_frame)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
         self.control_listbox = tk.Listbox(
-            control_frame,
+            self.control_frame,
+            bd=-2,
+            yscrollcommand=scrollbar.set,
+            bg='#cccccc',
         )
-
-
-        control_frame.place(x=60, y=150)
-
+        self.control_listbox.pack(side='left', fill=tk.BOTH)
+        scrollbar.config(command=self.control_listbox.yview)
+        self.control_frame.place(y=160)
+        
 
     def logLabel(self):
         log_frame = tk.Frame(
             self.master,
-            height=7
+            height=5
             )
         scrollbar = tk.Scrollbar(log_frame)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.log_listbox = tk.Listbox(
             log_frame,
             yscrollcommand=scrollbar.set,
-            height=7
+            height=5
         )
         
         self.log_listbox.insert(tk.END, 'Welcome back fishing log')
@@ -129,6 +176,8 @@ class FishingGUI(tk.Frame, Win):
             bg='white',
         )
         components = [
+            {'title': 'Start all bots', 'command': lambda: self.bot_start()},
+            {'title': 'Stop all bots', 'command': lambda: self.bot_stop()},
             {'title': 'Donate', 'command': lambda: self.callback(self.donateURL)},
             {'title': 'Resize windows', 'command': lambda: self.resize()}, 
             {'title': 'Clear Log', 'command': lambda: self.clearlog()}, 
@@ -145,13 +194,37 @@ class FishingGUI(tk.Frame, Win):
                 font=('Tahoma', 10)
 
             ).pack(side='top', fill='x', pady=5)
-        button_frame.grid(row=0, column=1,  sticky='nsew')
-        button_frame.place(x=600, y=157.5)
+        button_frame.grid(row=0, column=1, sticky='nsew')
+        button_frame.place(x=600, y=102.5)
     
+    def contol_destroy(self):
+        self.control_frame.pack_forget()
+        self.control_frame.destroy()
+
     def clearlog(self):
         self.listbox.delete(0, tk.END)
         self.listbox.insert(tk.END, 'Welcome back fishing log')
 
+    def bot_start(self):
+        for bot in self.botArray:
+            bot.findGameProcess()
+            if bot.findAddress():
+                bot.isStop = True
+        try:
+            self.contol_destroy()
+            self.controlFrame()
+            self.control_refresh()
+        except:pass
+
+    def bot_stop(self):
+        for bot in self.botArray:
+            bot.isStop = False
+        try:
+            self.contol_destroy()
+            self.controlFrame()
+            self.control_refresh()
+        except:pass
+            
     def resize(self):
         for bot in self.botArray:
             super().resizeWindow(bot.hwnd)
@@ -177,29 +250,3 @@ class FishingGUI(tk.Frame, Win):
             task.cancel()
         self.loop.stop()
         self.destroy()
-        
-
-# tk.Label(
-#     control_frame,
-#     bg='white',
-#     font=('Tahoma', 12, 'bold'),
-#     text='Bots list'
-# ).pack(side='top', anchor='n')
-
-# for bot in self.botArray:
-#             self.bot_windowCaption = tk.Label(
-#                 self.control_frame,
-#                 bg='white',
-#                 font=('Tahoma', 10, 'bold'),
-#             )
-#             self.bot_windowCaption['text'] = bot.windowCaption
-
-#             self.bot_score = tk.Label(
-#                 self.control_frame,
-#                 bg='white',
-#                 font=('Tahoma', 8, 'bold'),
-#                 text=f'score: {bot.score}'
-#             )
-            
-#             self.bot_windowCaption.pack(side='left', anchor='n')
-#             self.bot_score.pack(side='left', anchor='n')
