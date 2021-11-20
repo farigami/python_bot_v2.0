@@ -1,6 +1,8 @@
-from win32 import win32gui, win32process
+from win32 import win32gui, win32process,  win32api
 from time import sleep
 import win32con
+
+
 
 class Win:
     def findWindow(self, hwnd, windowClass):
@@ -15,11 +17,21 @@ class Win:
     def getWindowThreadProcessId(self, hwnd):
         return win32process.GetWindowThreadProcessId(hwnd)[1]
     
-    def postMessage(sellf, hwnd, key):
+    def postMessage(self, hwnd, key):
+        sleep(0.1)
         win32gui.PostMessage(hwnd, win32con.WM_KEYDOWN, key, 0)
         sleep(0.05)
         win32gui.PostMessage(hwnd, win32con.WM_KEYUP, key, 0)
     
+    def postWindowDeleteClick(self, hwnd, coords):
+        #FIXME
+        x, y = coords
+        lParam = win32api.MAKELONG(x, y)
+        win32gui.PostMessage(hwnd, win32con.WM_KEYDOWN, 0x13, lParam)
+        sleep(0.05)
+        win32gui.PostMessage(hwnd, win32con.WM_KEYUP, 0x13, lParam)
+        
+
     def getWindowCaption(self, hwnd):
         return win32gui.GetWindowText(hwnd)
     

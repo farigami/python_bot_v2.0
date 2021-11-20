@@ -18,14 +18,15 @@ class Bot(Win):
         self.pid = pid
         self.client = client
         self.hwnd = hwnd
-        self.state = '0x00FC3D18'
-        self.fish = '0x00F9BCE8'
-        self.state_offsets = [0x0, 0x28, 0x54, 0x88, 0xAC, 0x204, 0x54]
-        self.fish_offsets = [0x0, 0x6C, 0x1C, 0x50, 0x0, 0x34, 0x704]
+        self.state = '0x00FD1704'
+        self.fish = '0x00FA30D4'
+        self.state_offsets = [0x8, 0x48, 0x48, 0xA0, 0xAC, 0x204, 0x54]
+        self.fish_offsets = [0x68, 0xE4, 0x10, 0x8, 0x0, 0x64, 0x55C]
         self.score = 0
         self.windowCaption = windowCaption
         self.stateAddress = stateAddress
         self.fishAddress = fishAddress
+        self.isClear = False
         self.isStop = False
     
     def getWindowCaption(self):

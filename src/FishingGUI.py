@@ -176,6 +176,8 @@ class FishingGUI(tk.Frame, Win):
             bg='white',
         )
         components = [
+            #FIXME
+            #{'title': 'Clear inventory', 'command': lambda: self.bot_clear()},
             {'title': 'Start all bots', 'command': lambda: self.bot_start()},
             {'title': 'Stop all bots', 'command': lambda: self.bot_stop()},
             {'title': 'Donate', 'command': lambda: self.callback(self.donateURL)},
@@ -197,6 +199,10 @@ class FishingGUI(tk.Frame, Win):
         button_frame.grid(row=0, column=1, sticky='nsew')
         button_frame.place(x=600, y=102.5)
     
+    def bot_clear(self):
+        for bot in self.botArray:
+            bot.isClear = True
+
     def contol_destroy(self):
         self.control_frame.pack_forget()
         self.control_frame.destroy()
